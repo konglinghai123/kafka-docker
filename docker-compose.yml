@@ -4,8 +4,14 @@ services:
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
+    hostname: zk
+    container_name: zk
+    restart: always
   kafka:
     build: .
+    hostname: kafka
+    container_name: kafka
+    tty: true
     ports:
       - "9092"
     environment:
@@ -19,3 +25,34 @@ services:
       - "9000:9000"
     environment:
       ZK_HOSTS: 192.168.99.100
+  es:
+    image: apachegriffin/elasticsearch
+    hostname: es
+    ports:
+      - 39200:9200
+      - 39300:9300
+    container_name: es
+  griffin:
+    image: apachegriffin/griffin_spark2:0.3.0
+    hostname: griffin
+    links:
+      - es
+      - zk
+      - kafka
+    environment:
+      ES_HOSTNAME: es
+      ZK_HOSTNAME: zk
+      KAFKA_HOSTNAME: kafka
+    volumes:
+      - /var/lib/mysql
+    ports:
+      - 32122:2122
+      - 38088:8088
+      - 33306:3306
+      - 35432:5432
+      - 38042:8042
+      - 39083:9083
+      - 38998:8998
+      - 38080:8080
+    tty: true
+    container_name: griffin
